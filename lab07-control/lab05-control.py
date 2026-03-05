@@ -91,7 +91,7 @@ class MyGame(arcade.Window):
          
         self.set_mouse_visible(False) #Ocultamos el cursor del ratón
 
-        joysticks = arcade.get_joysticks() #Pedimos a arcade la lista de mandos enchufados
+        joysticks = arcade.get_game_controllers() #Pedimos a arcade la lista de mandos enchufados
 
         if joysticks:
             #Si hay al menos uno, nos guardamos el primero [0]
@@ -149,7 +149,7 @@ class MyGame(arcade.Window):
             self.mi_sol.change_y = 0
 
     def on_update(self, delta_time):
-        self.mi_sol.on_update()
+        
         if self.joystick:
             if abs(self.joystick.x) > DEAD_ZONE:
                 self.mi_sol.change_x = self.joystick.x * MOVEMENT_SPEED
@@ -164,6 +164,7 @@ class MyGame(arcade.Window):
                 self.mi_sol.change_y = -self.joystick.y * MOVEMENT_SPEED
             else:
                 self.mi_sol.change_y = 0
+        
         self.mi_sol.on_update()
 
 def main():
