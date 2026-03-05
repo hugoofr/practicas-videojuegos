@@ -91,15 +91,15 @@ class MyGame(arcade.Window):
          
         self.set_mouse_visible(False) #Ocultamos el cursor del ratón
 
-        joysticks = arcade.get_joysticks()
+        joysticks = arcade.get_joysticks() #Pedimos a arcade la lista de mandos enchufados
 
-        # If we have a game controller plugged in, grab it and
-        # make an instance variable out of it.
         if joysticks:
+            #Si hay al menos uno, nos guardamos el primero [0]
             self.joystick = joysticks[0]
-            self.joystick.open()
+            self.joystick.open() #Lo encendemos para leerlo
+            print("Mando detectado correctamente.")
         else:
-            print("There are no joysticks.")
+            print("No hay mandos conectados.")
             self.joystick = None
 
     def on_draw(self):
@@ -149,6 +149,21 @@ class MyGame(arcade.Window):
             self.mi_sol.change_y = 0
 
     def on_update(self, delta_time):
+        self.mi_sol.on_update()
+        if self.joystick:
+            if abs(self.joystick.x) > DEAD_ZONE:
+                self.mi_sol.change_x = self.joystick.x * MOVEMENT_SPEED
+            else:
+                #Si no tocamos la palanca (o se mueve menos de la zona muerta), se para
+                self.mi_sol.change_x = 0
+                
+            #Movimiento Vertical (Eje Y)
+            if abs(self.joystick.y) > DEAD_ZONE:
+                # Le ponemos un signo negativo delante a la 'y' porque en la mayoría 
+                # de mandos empujar hacia arriba da valores negativos.
+                self.mi_sol.change_y = -self.joystick.y * MOVEMENT_SPEED
+            else:
+                self.mi_sol.change_y = 0
         self.mi_sol.on_update()
 
 def main():
