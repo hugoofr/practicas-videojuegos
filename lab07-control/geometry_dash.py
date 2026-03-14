@@ -88,13 +88,16 @@ class MyGame(arcade.Window):
         """ Constructor """
         #Creamos la ventana
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "GEOMETRY DASH")
-        #Color de fondo
+        #Color de fondo (lo dejamos por si la imagen falla)
         arcade.set_background_color(arcade.color.BABY_BLUE)
         
         self.cubo = None
 
         #Creamos la lista que guardará nustros sprites
-        self.lista_sprites = arcade.SpriteList()                                                                                                                                                                                                                                                                                                                                                      
+        self.lista_sprites = arcade.SpriteList()
+
+        #Cargamos una imagen para el fondo
+        self.textura_fondo =  arcade.load_texture("lab07-control/fondo_geometry_dash.jpg")                                                                                                                                                                                                                                                                                                                                                     
        
         #Para jugar con el mando
         joysticks = arcade.get_game_controllers() #Pedimos al sistema operativo una lista de los mandos que están conectados al ordeandor
@@ -125,7 +128,8 @@ class MyGame(arcade.Window):
     def on_draw(self):
         self.clear()
 
-        #LLAMAMOS A NUESTRAS FUNCIONES DE DIBUJO
+        arcade.draw_texture_rect(self.textura_fondo, arcade.LBWH(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+
         # Suelo
         dibujar_suelo()
         #Dibujamos el cubo
