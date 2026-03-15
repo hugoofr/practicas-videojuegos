@@ -99,13 +99,22 @@ class MyGame(arcade.Window):
         #Cargamos una imagen para el fondo
         self.textura_fondo =  arcade.load_texture("lab07-control/fondo_geometry_dash.jpg")                                                                                                                                                                                                                                                                                                                                                     
        
-        #Para jugar con el mando
-        joysticks = arcade.get_game_controllers() #Pedimos al sistema operativo una lista de los mandos que están conectados al ordeandor
+        #PARA JUGAR CON UN MANDO
+        joysticks = arcade.get_controllers() #Pedimos al sistema operativo una lista de los mandos que están conectados al ordeandor
         if joysticks:
             #Si hay al menos uno, nos guardamos el primero [0]
-            self.joystick = joysticks[0] #Tomamos el primer mando que encontremos 
+            self.joystick = joysticks[-1] #Tomamos el primer mando que encontremos 
             self.joystick.open() #Abrimos la comunicación con este mando
+            self.joystick.push_handlers() #El mando envía sus señales a la ventana
             print("Mando detectado correctamente.")
+
+            @self.joystick.event
+            def on_button_press(controller, button_name):
+                """ Se ejecuta cada vez que pulsas un botón del mando """
+                if button_name == 'a':
+                    if self.cubo.center_y <= GROUND_HEIGHT + (self.cubo.lado / 2):
+                        self.cubo.change_y = JUMP_SPEED
+                
         else:
             print("No hay mandos conectados.")
             self.joystick = None
@@ -152,10 +161,20 @@ class MyGame(arcade.Window):
         #Solo frenamos el eje X
         #Si frenamos el eje Y, al soltar la tecla el salto se corta
         if key in (arcade.key.LEFT, arcade.key.A, arcade.key.RIGHT, arcade.key.D):
-            self.cubo.change_x = 0      
+            self.cubo.change_x = 0  
         
     def on_update(self, delta_time):
         """Lógica del juego, movimiento y rotación"""
+
+        #Movimiento con el mando: (Movimiento horizontal del cubo mediante el joystick izquierdo)
+        if self.joystick:
+            if self.joystick.leftx < -0.2:
+                self.cubo.change_x = -MOVEMENT_SPEED
+            elif self.joystick.leftx > 0.2:
+                self.cubo.change_x = MOVEMENT_SPEED
+            else:
+                self.cubo.change_x = 0
+
         self.cubo.update()
 
 def main():
