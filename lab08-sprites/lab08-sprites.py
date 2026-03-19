@@ -4,7 +4,7 @@ import random
 import arcade
 
 # --- Constantes ---
-SPRITE_SCALING_PLAYER = 0.5 # Tamaño jugador
+SPRITE_SCALING_PLAYER = 0.4 # Tamaño jugador
 SPRITE_SCALING_COIN = 0.2 # Tamaño monedas
 SPRITE_SCALING_METEORITO = 0.08 # Tamaño meteoritos
 
@@ -64,6 +64,10 @@ class MyGame(arcade.Window):
             coin.center_x = random.randrange(SCREEN_WIDTH)
             coin.center_y = random.randrange(SCREEN_HEIGHT)
 
+            # Las damos velocidad diagonal aleatoria
+            coin.change_x = random.choice([-2, 2])
+            coin.change_y = random.choice([-2, 2])
+
             # Añadimos las monedas a la lista
             self.coin_list.append(coin)
 
@@ -75,6 +79,9 @@ class MyGame(arcade.Window):
             # Posición de las monedas
             meteorito.center_x = random.randrange(SCREEN_WIDTH)
             meteorito.center_y = random.randrange(SCREEN_HEIGHT)
+
+            # Caen hacia abajo
+            meteorito.change_y = -2 # Velocidad
 
             # Añadimos las monedas a la lista
             self.meteorito_list.append(meteorito)
@@ -102,8 +109,29 @@ class MyGame(arcade.Window):
     def on_update(self, delta_time):
         """ Movimiento y lógica del juego """
 
-        # Llamamos a la función de actualización de todos los sprites
+        # Actualizamos la posición de todos los sprites
         self.coin_list.update()
+        self.meteorito_list.update()
+
+        # Lógica de los meteoritos (Lluvia infinita)
+        for meteorito in self.meteorito_list:
+            meteorito: arcade.Sprite
+            # Si el meteorito se sale por abajo de la pantalla...
+            if meteorito.top < 0:
+                meteorito.bottom = SCREEN_HEIGHT # Lo teletransportamos arriba
+                meteorito.center_x = random.randrange(SCREEN_WIDTH) # En una posición X aleatoria
+
+        # Lógica de las monedas (Rebote en las paredes)
+        for coin in self.coin_list:
+            coin: arcade.Sprite
+            # Si choca con los bordes izquierdo o derecho, invierte su dirección X
+            if coin.left < 0 or coin.right > SCREEN_WIDTH:
+                coin.change_x *= -1 
+            
+            # Si choca con los bordes inferior o superior, invierte su dirección Y
+            if coin.bottom < 0 or coin.top > SCREEN_HEIGHT:
+                coin.change_y *= -1
+
 
         # Lista con las monedas que colisionan con el jugador
         coins_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.coin_list)
