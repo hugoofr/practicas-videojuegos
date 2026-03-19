@@ -11,6 +11,8 @@ SPRITE_SCALING_METEORITO = 0.08 # Tamaño meteoritos
 COIN_COUNT = 50
 METEORITO_COUNT = 20
 
+MOVEMENT_SPEED = 5 # Velocidad a la que se mueve el jugador
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
@@ -99,19 +101,45 @@ class MyGame(arcade.Window):
         output = f"Score: {self.score}"
         arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
 
-    def on_mouse_motion(self, x, y, dx, dy):
-        """ Función para manejar el movimiento del ratón """
+    # Funciones para mover el jugador con las flechas del teclado
+    def on_key_press(self, key, modifiers):
+        """ Función que se llama cada vez que se pulsa una tecla """
+        if key == arcade.key.LEFT:
+            self.player_sprite.change_x = -MOVEMENT_SPEED
+        elif key == arcade.key.RIGHT:
+            self.player_sprite.change_x = MOVEMENT_SPEED
+        if key == arcade.key.UP:
+            self.player_sprite.change_y = MOVEMENT_SPEED
+        elif key == arcade.key.DOWN:
+            self.player_sprite.change_y = -MOVEMENT_SPEED
 
-        # Movemos el centro del sprite jugador para que coincida con las coordenadas del ratón
-        self.player_sprite.center_x = x
-        self.player_sprite.center_y = y
+    def on_key_release(self, key, modifiers):
+        """ Función que se llama cada vez que se suelta una tecla """
+        if key == arcade.key.LEFT or key == arcade.key.RIGHT:
+            self.player_sprite.change_x = 0
+        elif key == arcade.key.UP or key == arcade.key.DOWN:
+            self.player_sprite.change_y = 0
 
     def on_update(self, delta_time):
         """ Movimiento y lógica del juego """
 
         # Actualizamos la posición de todos los sprites
+        self.player_list.update()
         self.coin_list.update()
         self.meteorito_list.update()
+
+        # Límites para que el jugador no se salga de la pantalla
+        if self.player_sprite.left < 0:
+            self.player_sprite.left = 0
+        
+        elif self.player_sprite.right > SCREEN_WIDTH:
+            self.player_sprite.right = SCREEN_WIDTH
+
+        if self.player_sprite.bottom < 0:
+            self.player_sprite.bottom = 0
+            
+        elif self.player_sprite.top > SCREEN_HEIGHT:
+            self.player_sprite.top = SCREEN_HEIGHT
 
         # Lógica de los meteoritos (Lluvia infinita)
         for meteorito in self.meteorito_list:
