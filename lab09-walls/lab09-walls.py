@@ -1,10 +1,11 @@
-""" Sprite Sample Program """
+""" Práctica Sprites and Walls """
 
 import arcade
 
 # --- Constants ---
 SPRITE_SCALING_BOX = 0.5
 SPRITE_SCALING_PLAYER = 0.5
+SPRITE_SCALING_WALL = 0.5
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -31,7 +32,7 @@ class MyGame(arcade.Window):
         self.physics_engine = None
 
     def setup(self):
-        # Set the background color
+        #Elegimos el color de fondo
         arcade.set_background_color(arcade.color.AMAZON)
 
         #Listas de Sprites
@@ -41,29 +42,73 @@ class MyGame(arcade.Window):
         #Reiniciamos la puntuación
         self.score = 0
 
+        # --- DIBUJAMOS EL CIRCUITO ---
+        mapa = [
+            "OOOOOOOOOOOOOOOOOOOO",
+            "O                  O",
+            "O  XXXX  XXXXXXX   O",
+            "O  X     X     X   O",
+            "O  X  XXXX  X  X   O",
+            "O  X        X  X   O",
+            "O  XXXXXXXXXX  X   O",
+            "O                  O",
+            "OOOOOOOOOOOOOOOOOOOO"
+        ]
+
+        TAMANO_CAJA = 64  # Ajusta este número si las cajas no encajan bien
+        SPRITE_SCALING_WALL = 0.5
+
+        for fila_index in range(len(mapa)):
+            fila = mapa[fila_index]
+            for columna_index in range(len(fila)):
+                letra = fila[columna_index]
+                
+                # Calculamos las coordenadas x e y (sirve para ambos tipos de caja)
+                centro_x = columna_index * TAMANO_CAJA
+                centro_y = (len(mapa) - fila_index) * TAMANO_CAJA
+                
+                # Si es una 'O', ponemos la caja del borde exterior
+                if letra == "O":
+                    #Usamos los muros para hacer el recinto
+                    wall = arcade.Sprite("lab09-walls/muro.png", SPRITE_SCALING_BOX)
+                    wall.center_x = centro_x
+                    wall.center_y = centro_y
+                    self.wall_list.append(wall)
+                    
+                # Si es una 'X', ponemos la caja del laberinto
+                elif letra == "X":
+                    #Usamos las cajas para hacer el laberinto
+                    wall = arcade.Sprite("lab09-walls/caja.png", SPRITE_SCALING_BOX)
+                    wall.center_x = centro_x
+                    wall.center_y = centro_y
+                    self.wall_list.append(wall)
+
         #Creamos el jugador
         self.player_sprite = arcade.Sprite("lab09-walls/jugador.png", SPRITE_SCALING_PLAYER)
         self.player_sprite.center_x = 50
         self.player_sprite.center_y = 64
         self.player_list.append(self.player_sprite)
 
-        #Formamos muros de cajas 
-        coordinate_list = [[400, 500],
-                           [470, 500]]
-        
-        for coordinate in coordinate_list:
-            wall = arcade.Sprite("lab09-walls/caja.png", SPRITE_SCALING_BOX)
-            wall.center_x = coordinate[0]
-            wall.center_y = coordinate[1]
-            self.wall_list.append(wall)
-
+        #Creamos el motor de física: esto identifica al jugador y a un alista de sprites por los que el jugador no tiene permitido pasar
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+       
+        #Creamos dos cámaras: una para el mundo exterior y otra para la puntuación (o cualquier elemento de la interaz)
+        self.camera_for_sprites = arcade.Camera2D()
+        self.camera_for_gui = arcade.Camera2D()
  
     def on_draw(self):
         self.clear()        
         
+        #Selccionamos la cámara para nuestros sprites
+        self.camera_for_sprites.use()
+        
         #Dibujamos los Sprites
         self.wall_list.draw()
         self.player_list.draw()
+
+        #Seleccionamos la cámara para los elementos de la interfaz
+        self.camera_for_gui.use()
+        arcade.draw_text(f"Score: {self.score}", 10, 10, arcade.color.WHITE, 24)
 
     def on_key_press(self, key, modifiers):
         """Función que se ejecuta cada vez que se pulsa una tecla"""
@@ -84,6 +129,14 @@ class MyGame(arcade.Window):
             self.player_sprite.change_y = 0
         elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
             self.player_sprite.change_x = 0 
+
+    def on_update(self, delta_time):
+        """Movimiento y lógica del juego"""
+        
+        self.physics_engine.update()
+
+        #Centramos la cámara en el jugador
+        self.camera_for_sprites.position = self.player_sprite.position
 
 def main():
     window = MyGame()
